@@ -1,0 +1,32 @@
+services:
+  database:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo_dev 
+    ports:
+      - "5433:5432" # <-- ADD THIS LINE: Maps local port 5433 to container port 5432
+    volumes:
+      - db-data:/var/lib/postgresql
+    restart: unless-stopped
+
+  odoo:
+    image: odoo:20.0
+    depends_on:
+      - database
+    ports:
+      - "8069:8069"
+    volumes:
+      - odoo-data:/var/lib/odoo
+      - ./addons:/mnt/extra-addons
+      - ./config/odoo.conf:/etc/odoo/odoo.conf
+    environment:
+      HOST: database # Keep this as 'db' because Odoo communicates inside the Docker network
+      USER: odoo
+      PASSWORD: odoo_dev
+    restart: unless-stopped
+
+volumes:
+  db-data:
+  odoo-data:
